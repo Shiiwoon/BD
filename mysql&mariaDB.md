@@ -97,4 +97,4 @@ Permet:
 >Modification du fichier de configuration
 
 1.  key_buffer:
-2.  
+http://eprel.u-pec.fr/eprel/claroline/backends/download.php?url=L1RQX015U1FMLU1hcmlhREJfTFBBU1NSLnBkZg%3D%3D&currentTime=1486316180&cidReset=true&cidReq=5721
