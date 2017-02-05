@@ -17,7 +17,7 @@
         psql -d template1 -c "ALTER USER postgres WITH PASSWORD 'mdp'"
         
 >Créer une base et ce connecté
-
+---
         #su - postgres
         createdb baseDBTest
         psql baseDBTest
@@ -121,3 +121,5 @@ psql -h localhost -U postgres -W -c "CREATE USER utilrepl WITH REPLICATION PASSW
         hot_standby=on
         
 > Arret de l'esclave et déstruction de tout les fichiers de la base(attention pédro)
+
+
