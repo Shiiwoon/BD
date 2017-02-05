@@ -83,7 +83,7 @@ Permet:
         # /etc/init.d/mysql start 
         
         # mysql -u root -p 
-### #Bah?Elle est ou ma promotion ?=D
+
 
 >Supervision et tunning MySQL
 
@@ -96,5 +96,128 @@ Permet:
 
 >Modification du fichier de configuration
 
-1.  key_buffer:
-http://eprel.u-pec.fr/eprel/claroline/backends/download.php?url=L1RQX015U1FMLU1hcmlhREJfTFBBU1NSLnBkZg%3D%3D&currentTime=1486316180&cidReset=true&cidReq=5721
+1.  key_buffer:Regarder dans SHOW GLOBAL STATUS si
+key_reads/key_read_requests ratio est inférieur à 0.01 pour éviter l'accès disque
+Si non, augmenter le key-buffer
+
+2. thread_concurrency (présent uniquement si machine multicœurs) :
+2X le nombre de cœurs
+3. Activer le log requêtes lentes dans my.cnf:
+log-slow- queries=/home/mysqld-slow.log
+Et demander d'indiquer le temps le plus lent
+long_query_time = 1
+Analyser les résultats:
+tail -n 1000 /home/mysqld-slow.log
+4. Vérifier qu'il n'y a pas de "connection leakage": there are not too many
+open connections in the database.
+Utiliser SHOW PROCESSLIST;
+5. Analyser les verous avec :
+SHOW STATUS LIKE 'Table%';
+et SHOW ENGINE INNODB STATUS (si vous utilisez INNODB comme moteur)
+
+>Sauvegardes, complètes et partielles
+
+*On sauvegarde souvent une (ou plusieurs) base en omettant de sauvegarder
+également les utilisateurs et leurs privilèges. Ces informations sont dans la table users de
+la base mysql*
+
+- A chaud
+    -   mysqldump: cli
+(SCRIPT USE):MYSQL_PWD=motDePasse
+    mysqldump --user=root --all-databases | gzip > save.mysql.sql.gz
+    -   mysqlworkbench,phpmyadmin,ect
+-   A froid (Arret du serveur)
+    -   Archiver /var/lib/mysql + /var/log/mysql.log
+    -   Pour les tables MyISAM > .FRM , .MYI et .MYD
+    -   Pourt les tables InnoDB > .FRM, .ibdata(data file) ,(table file si innodb_file_per_table)idb, .iblogfile(journalisation intermédiaire)
+>Restauration
+
+- A chaud
+
+            mysql -uuser -p
+            mysql>use database baseDeDonne
+            mysql>source /home/user/mysql/db.sql
+            (SCRIPT USE):mysql -uuser--password=mdp </home/user/mysql/db.sql
+- A froid(service arréter)
+> 
+Redéposer les fichiers archivée dans leurs répertoires
+
+>Rsnapshot
+
+        #apt-get install rsnapshot
+        /etc/rsnapshot.conf > fichier de conf
+        
+        vi /etc/cron.d/rsnapshot
+        Décommenter les cron pour autoriser les backup
+        
+        cp /usr/share/doc/rsnapshot/examples/utils/backup_mysql.sh /usr/local/bin/
+        
+        chown root:root /usr/local/bin/backup_mysql.sh
+        chmod o-w /usr/local/bin/backup_mysql.sh
+        
+        vi /usr/bin/mysqldump --all-databases > mysqldump_all_databases.sql
+        OU base par base
+        /usr/bin/mysqldump --defaults-file=/etc/mysql/debian.cnf DATABASE > DATABASE.SQL
+        vi /etc/rsnapshot.conf
+        backup_script /usr/local/bin/backup_mysql.sh TAB localhost/mysqldump
+        rsnapshot configtest
+        
+        cron pour programmer les sauvegarde
+        
+>Migration de MySQL vers MariaDB
+
+*Faire une sauvegarde avant migration*
+ 
+        #apt-get update && apt-get upgrade
+        #apt-get install python-software-properties-common
+        
+        #apt-key adv --recv-key --keyserver hkp://keyserver.ubuntu.com:80 0xcbcb082a1bb943db (enlever hkp:// et :80 si !IUT) 
+        
+        vi /etc/apt/sources.list.d/mariadb.list
+            deb http://fr.mirror.babylon.network/mariadb/repo/10.1/debian jessie main
+        
+        #apt-get update
+        #apt-get install mariadb-server
+        
+*Des messages de conflit vont s’afficher (normal on fait une migration) et le système va demander d’accepter la suppression de Mysql*
+      
+           -- Vérification --
+        mysql -u root -p
+        
+>Cluster MariaDB / Galera
+
+Avoir une 2eme machine debian + ssh et installer DIRECT mariaDB
+
+*Production = 3 serveurs minimum*
+
+>MASTER
+    
+      #service mysql stop
+        mysqld --wsrep-new-cluster
+        OU
+        galera_new_cluster (systemd)
+        
+>SLAVE
+
+        service mysql stop (pas obligatoire mais peut servir)
+        mysqld --wrep_cluster_address=gmcomm://ipMASTER
+        
+        Pour vérifier
+        mysql -uuser -pmdp
+        SHOW STATUS LIKE 'wrep_%';
+        
+        
+>Changement du répertoire de logs MySQL
+
+*Car reduit la réactivité du **cluster** en generant un grand nombre d'IO*
+
+        vi my.cnf
+        log-bin=/NouveauCheminRépertoire/mysql-bin
+        
+        purge binlog
+        
+        service mysql stop
+        
+        mv /var/lib/mysql/mysql-bin.* /NouveauCheminRepertoire/mysql-bin
+        
+        #service mysql start
