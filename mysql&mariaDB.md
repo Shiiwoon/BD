@@ -1,3 +1,5 @@
+Fabrice EDGARD 4x4
+
 # MySQL & MariaDB
 
 
@@ -178,7 +180,7 @@ Redéposer les fichiers archivée dans leurs répertoires
         
         #apt-get update
         #apt-get install mariadb-server
-        
+        cat /etc/lsb-release
 *Des messages de conflit vont s’afficher (normal on fait une migration) et le système va demander d’accepter la suppression de Mysql*
       
            -- Vérification --
@@ -205,7 +207,7 @@ Avoir une 2eme machine debian + ssh et installer DIRECT mariaDB
         Pour vérifier
         mysql -uuser -pmdp
         SHOW STATUS LIKE 'wrep_%';
-        
+        # mysql -u root -e 'SELECT VARIABLE_VALUE as "cluster size" FROM INFORMATION_SCHEMA.GLOBAL_STATUS WHERE VARIABLE_NAME="wsrep_cluster_size"'
         
 >Changement du répertoire de logs MySQL
 
