@@ -122,4 +122,49 @@ psql -h localhost -U postgres -W -c "CREATE USER utilrepl WITH REPLICATION PASSW
         
 > Arret de l'esclave et déstruction de tout les fichiers de la base(attention pédro)
 
+        #service postgresql stop
+        cd /var/lib/postgresql/9.4/main
+        rm -rf *
+        vi /var/lib/postgresql/9.4/main/recovery.conf
+        primary_connninfo='host=X.X.X.1 port=5432 user=utilrepl password=mdp'
+        standby_mode=on
+        
+> On copie tout du master vers l'esclave
+
+rsync -av /var/lib/postgresl/9.4/main/* X.X.X.2:/var/lib/postgresql/9.4/main/
+OU
+scp /var/lib/postgresql/9.4/main/* user@X.X.X.2:/var/lib/postgresql/9.4/main/
+
+>Démarer postregsql sur les 2 serveurs 
+
+        #service postgresql start
+        
+>Vérifier la récplication
+
+        #psql -h localhost -U postgres -W -c "select * from pg_stat_replication;"
+        
+        
+> Récupération de mot de passe oublié
+
+        #service postgresql stop
+        #vi /usr/lib/pgsql/data/pg_hba.conf
+        modifier local all all ... en local all postgres trust
+        
+        # service postresql start
+        #su - postgres
+        psql -d nomDeLaBase -U postgres
+        alter user postgres with password 'LOLnouveauMotDePasseLoL';
+        
+        ##(SCRIPT USE): psql -U postgres nomDeLaBase -c "ALTER USER postgres WITH PASSWORD 'LOLnewMDP';"
+        
+> Remis en état
+
+        #vi /usr/lib/pgsql/data/pg_hba.conf
+        local all all trust
+        local all postgres ident
+        
+        #Service postgresql start
+
+#SaMeriteUnePromotion
+        
 
