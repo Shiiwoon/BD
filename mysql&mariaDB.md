@@ -213,7 +213,7 @@ Avoir une 2eme machine debian + ssh et installer DIRECT mariaDB
         
 >Changement du répertoire de logs MySQL
 
-*Car reduit la réactivité du **cluster** en generant un grand nombre d'IO*
+*Car reduit la réactivité du __cluster__ en generant un grand nombre d'IO*
 
         vi my.cnf
         log-bin=/NouveauCheminRépertoire/mysql-bin
