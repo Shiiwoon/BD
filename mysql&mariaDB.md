@@ -17,7 +17,7 @@ Fabrice EDGARD 4x4
         #apt-get install apache2
         Vérifier > http://IP
         
-        #apt-get install php5 libaapache2-mod-php5 php-mysql+ module UTILE
+        #apt-get install php5 libaapache2-mod-php5 php5-mysql+ module UTILE
         vi /var/www/html/info.php
             <? phpinfo(); ?>
         #service apache2 restart
@@ -173,16 +173,18 @@ Redéposer les fichiers archivée dans leurs répertoires
 *Faire une sauvegarde avant migration*
  
         #apt-get update && apt-get upgrade
-        #apt-get install python-software-properties-common
+        #apt-get install python-software-properties
         
         #apt-key adv --recv-key --keyserver hkp://keyserver.ubuntu.com:80 0xcbcb082a1bb943db (enlever hkp:// et :80 si !IUT) 
+        
+        (IUT expot "http_proxy=http://proxy2.iutsf.lan:3128" + export "https_proxy=http://proxy2.iutsfr.lan:3128")
         
         vi /etc/apt/sources.list.d/mariadb.list
             deb http://fr.mirror.babylon.network/mariadb/repo/10.1/debian jessie main
         
         #apt-get update
         #apt-get install mariadb-server
-        cat /etc/lsb-release
+     
 *Des messages de conflit vont s’afficher (normal on fait une migration) et le système va demander d’accepter la suppression de Mysql*
       
            -- Vérification --
